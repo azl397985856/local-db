@@ -28,12 +28,12 @@ disgusting ... right?
 # Install
 
 ```bash
- npm i local-db
+ npm i local-db.js
 ```
 
 ```js
 // Example store.js usage with npm
-var store = require('local-db')
+var store = require('local-db.js')
 store.set('user', { name:'Marcus' })
 store.get('user').name == 'Marcus'
 

@@ -1,8 +1,8 @@
 {
-  "name": "local-db",
+  "name": "local-db.js",
   "version": "1.0.0",
-  "description": "local-db is a fully pluggable persistent layer which provides basic key/value storage functionality (get/set/remove/clear). It build on the top of HTML5 localstorage, so local-db has the saimilar api.",
-  "main": "lib/index.js",
+  "description": "local-db is a fully pluggable persistent layer which provides basic key/value storage functionality (get/set/remove/clear).",
+  "main": "lib/db.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf lib",
