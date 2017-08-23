@@ -1,6 +1,6 @@
 {
   "name": "local-db.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "local-db is a fully pluggable persistent layer which provides basic key/value storage functionality (get/set/remove/clear).",
   "main": "lib/db.js",
   "scripts": {
