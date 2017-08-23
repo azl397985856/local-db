@@ -20,20 +20,29 @@ const constructorMap = {
   date: value => new Date(value),
   moment: value => moment(value)
 };
+function arrayConstructor(object) {
+  const ret = [];
+  if (!object) return ret;
+  if (!Object.keys(object).length) return ret;
+  const key = Object.keys(object)[0];
+  ret[key] = object[key];
+  return ret;
+}
 /**
  * {a: Number(1), b: {c:'3'}} -> 
  * { a::number: 1, b::object: {c::string: 3} }
  * @param {Object} object
  * @return {Object} 
  */
-function putObject(object) {
-  const ret = {};
-  for (const key in object) {
-    const _type = type(object[key]);
-    if (_type === "object") {
-      ret[`${key}${SEPRATOR}${_type}`] = putObject(object[key]);
+function putReference(payload) {
+  const ret = type(payload) === "object" ? {} : {};
+  for (const key in payload) {
+    const item = payload[key];
+    const _type = type(item);
+    if (_type === "object" || _type === "array") {
+      ret[`${key}${SEPRATOR}${_type}`] = putReference(item);
     } else {
-      ret[`${key}${SEPRATOR}${_type}`] = object[key];
+      ret[`${key}${SEPRATOR}${_type}`] = item;
     }
   }
   return ret;
@@ -44,18 +53,24 @@ function putObject(object) {
  * @param {Object} object
  * @return {Object} 
  */
-function takeObject(object) {
-  const ret = {};
-  for (const key in object) {
-    const _type = type(object[key]);
+function takeReference(payload) {
+  const ret = type(payload) === "object" ? {} : [];
+  for (const key in payload) {
+    const item = payload[key];
+    const _type = type(item);
     const realKey = key.split(SEPRATOR)[0];
     const realType = key.split(SEPRATOR)[1];
-    if (_type === "object") {
-      ret[realKey] = takeObject(object[key]);
+    if (realType === "object") {
+      ret[realKey] = takeReference(item);
+    } else if (realType === "array") {
+      ret[realKey] = ret[realKey] || [];
+
+      ret[realKey] = arrayConstructor(takeReference(item));
     } else {
-      ret[realKey] = constructorMap[realType](object[key]);
+      ret[realKey] = constructorMap[realType](item);
     }
   }
+
   return ret;
 }
 module.exports = {
@@ -65,16 +80,17 @@ module.exports = {
      */
   get(key) {
     let ret;
-    ["boolean", "number", "string", "array", "date"].forEach(ele => {
+    ["boolean", "number", "string", "date"].forEach(ele => {
       const value = window.localStorage.getItem(`${key}${SEPRATOR}${ele}`);
       if (value) {
         ret = constructorMap[ele](value);
       }
     });
     if (!ret) {
+      // array ?
       const result = window.localStorage.getItem(`${key}${SEPRATOR}object`);
       if (result) {
-        ret = takeObject(JSON.parse(result));
+        ret = takeReference(JSON.parse(result));
       } else {
         ret = null;
       }
@@ -88,10 +104,12 @@ module.exports = {
      */
   set(key, value) {
     const _type = type(value);
-    window.localStorage.setItem(
-      `${key}${SEPRATOR}${_type}`,
-      _type === "object" ? JSON.stringify(putObject(value)) : value
-    );
+    let ultimateValue = value;
+    if (_type === "array" || _type === "object") {
+      ultimateValue = JSON.stringify(putReference(value));
+    }
+
+    window.localStorage.setItem(`${key}${SEPRATOR}${_type}`, ultimateValue);
     return true;
   },
   clear() {
