@@ -66,7 +66,7 @@ function takeReference(payload) {
       ret[realKey] = ret[realKey] || [];
 
       ret[realKey] = arrayConstructor(takeReference(item));
-    } else {
+    } else if (constructorMap[realType]) {
       ret[realKey] = constructorMap[realType](item);
     }
   }
